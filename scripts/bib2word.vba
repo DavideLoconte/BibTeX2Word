@@ -108,7 +108,9 @@ Sub ParseMisc(bibTeX As String)
     
     Dim xml As String
     
-    citationTag = "MISSC_" & Left(Replace(title, " ", ""), 10) & "_" & year
+    Dim authorField As String
+    authorField = GetField(bibTeX, "author")
+    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(CleanString(authorField), 10))
     
     author = GetAuthorXML(bibTeX)
     title = GetField(bibTeX, "title")
@@ -150,7 +152,9 @@ Sub ParseReport(bibTeX As String)
     publisher = GetField(bibTeX, "institution")
 
     ' Create a unique citation tag
-    citationTag = "REPRT_" & Left(Replace(title, " ", ""), 10) & "_" & year
+    Dim authorField As String
+    authorField = GetField(bibTeX, "author")
+    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -200,7 +204,9 @@ Sub ParseBook(bibTeX As String)
     publisher = GetField(bibTeX, "publisher")
 
     ' Create a unique citation tag
-    citationTag = "BOOK_" & Left(Replace(title, " ", ""), 10) & "_" & year
+    Dim authorField As String
+    authorField = GetField(bibTeX, "author")
+    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -254,7 +260,9 @@ Sub ParseArticle(bibTeX As String)
     issue = GetField(bibTeX, "number")
 
     ' Create a unique citation tag
-    citationTag = "JOUAL_" & Left(Replace(title, " ", ""), 10) & "_" & year
+    Dim authorField As String
+    authorField = GetField(bibTeX, "author")
+    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -316,7 +324,9 @@ Sub ParseBookSection(bibTeX As String)
     publisher = GetField(bibTeX, "publisher")
 
     ' Create a unique citation tag
-    citationTag = CleanString("BOOON_" & Left(Replace(title, " ", ""), 10) & "_" & year)
+    Dim authorField As String
+    authorField = GetField(bibTeX, "author")
+    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -372,7 +382,9 @@ Sub ParseConference(bibTeX As String)
     conferenceName = GetField(bibTeX, "booktitle")
 
     ' Create a unique citation tag
-    citationTag = "CONCE_" & Left(Replace(title, " ", ""), 10) & "_" & year
+    Dim authorField As String
+    authorField = GetField(bibTeX, "author")
+    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -451,11 +463,12 @@ Function GetAuthorNameList(authorField As String) As String
 
     For i = LBound(authors) To UBound(authors)
         Dim nameParts() As String
-        nameParts = Split(CleanString(authors(i)), ",")
+        nameParts = Split(authors(i), ",")
+        
         If UBound(nameParts) = 1 Then
-            xml = xml & "<b:Person><b:Last>" & nameParts(0) & "</b:Last><b:First>" & nameParts(1) & "</b:First></b:Person>"
+            xml = xml & "<b:Person><b:Last>" & CleanString(nameParts(0)) & "</b:Last><b:First>" & CleanString(nameParts(1)) & "</b:First></b:Person>"
         Else
-            xml = xml & "<b:Person><b:Last>" & nameParts(0) & "</b:Last></b:Person>"
+            xml = xml & "<b:Person><b:Last>" & CleanString(nameParts(0)) & "</b:Last></b:Person>"
         End If
     Next i
 
