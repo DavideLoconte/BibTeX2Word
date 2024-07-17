@@ -110,7 +110,7 @@ Sub ParseMisc(bibTeX As String)
     
     Dim authorField As String
     authorField = GetField(bibTeX, "author")
-    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(CleanString(authorField), 10))
+    citationTag = GetBibKey(bibTeX)
     
     author = GetAuthorXML(bibTeX)
     title = GetField(bibTeX, "title")
@@ -154,7 +154,7 @@ Sub ParseReport(bibTeX As String)
     ' Create a unique citation tag
     Dim authorField As String
     authorField = GetField(bibTeX, "author")
-    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
+    citationTag = GetBibKey(bibTeX)
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -206,7 +206,7 @@ Sub ParseBook(bibTeX As String)
     ' Create a unique citation tag
     Dim authorField As String
     authorField = GetField(bibTeX, "author")
-    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
+    citationTag = GetBibKey(bibTeX)
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -262,7 +262,7 @@ Sub ParseArticle(bibTeX As String)
     ' Create a unique citation tag
     Dim authorField As String
     authorField = GetField(bibTeX, "author")
-    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
+    citationTag = GetBibKey(bibTeX)
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -326,7 +326,7 @@ Sub ParseBookSection(bibTeX As String)
     ' Create a unique citation tag
     Dim authorField As String
     authorField = GetField(bibTeX, "author")
-    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
+    citationTag = GetBibKey(bibTeX)
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -384,7 +384,7 @@ Sub ParseConference(bibTeX As String)
     ' Create a unique citation tag
     Dim authorField As String
     authorField = GetField(bibTeX, "author")
-    citationTag = CleanString(Left(Replace(title, " ", ""), 10) & year & Left(Replace(authorField, " ", ""), 10))
+    citationTag = GetBibKey(bibTeX)
 
     ' Start of the XML
     xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
@@ -416,6 +416,23 @@ Sub ParseConference(bibTeX As String)
     ' Insert citation at the current selection
     Selection.Fields.Add Selection.Range, wdFieldCitation, citationTag
 End Sub
+
+Function GetBibKey(bibTeX As String) As String
+    Dim startPos As Long
+    Dim endPos As Long
+    Dim bibKey As String
+    
+    ' Find the starting position of the BibTeX key
+    startPos = InStr(bibTeX, "{") + 1
+    ' Find the ending position of the BibTeX key
+    endPos = InStr(bibTeX, ",")
+    
+    ' Extract the BibTeX key
+    bibKey = Mid(bibTeX, startPos, endPos - startPos)
+    
+    ' Return the BibTeX key
+    GetBibKey = bibKey
+End Function
 
 Function GetField(bibTeX As String, fieldName As String) As String
     Set regex = CreateObject("VBScript.RegExp")
