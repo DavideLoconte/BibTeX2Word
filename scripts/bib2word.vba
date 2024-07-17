@@ -37,425 +37,276 @@ Sub PasteIntoCitation()
     ParseCitation (strText)
 End Sub
 
+' ------------------------------------------------------------------------------
 ' Private
+' ------------------------------------------------------------------------------
 
 Sub ParseCitation(bibTeX As String)
+    Dim xml As String
+
+    Dim citationTag As String
     Dim citationClass As String
-    citationClass = GetCitationClass(bibTeX)
-    
-    Select Case citationClass
-        Case "article"
-            ParseArticle (bibTeX)
-        Case "book"
-            ParseBook (bibTeX)
-        Case "booklet"
-            ParseBook (bibTeX)
-        Case "inbook"
-            ParseBookSection (bibTeX)
-        Case "incollection"
-            ParseBookSection (bibTeX)
-        Case "inproceedings"
-            ParseConference (bibTeX)
-        Case "conference"
-            ParseConference (bibTeX)
-        Case "proceedings"
-            ParseConference (bibTeX)
-        Case "manual"
-            ParseBook (bibTeX)
-        Case "mastersthesis"
-            ParseMisc (bibTeX)
-        Case "phdthesis"
-            ParseMisc (bibTeX)
-        Case "techreport"
-            ParseReport (bibTeX)
-        Case "unpublished"
-            ParseMisc (bibTeX)
-        Case "misc"
-            ParseMisc (bibTeX)
-    End Select
-
-End Sub
-
-Function GetCitationClass(bibTeX As String) As String
-    Dim startPos As Integer
-    Dim endPos As Integer
-    Dim citationClass As String
-    
-    ' Find the start position of the class (after '@' symbol)
-    startPos = InStr(bibTeX, "@") + 1
-    ' Find the end position of the class (before '{' symbol)
-    endPos = InStr(bibTeX, "{")
-    
-    ' Extract the class of the citation
-    If startPos > 0 And endPos > startPos Then
-        citationClass = Mid(bibTeX, startPos, endPos - startPos)
-        ' Convert the class to lowercase
-        citationClass = LCase(citationClass)
-    Else
-        citationClass = ""
-    End If
-    
-    GetCitationClass = citationClass
-End Function
-
-Sub ParseMisc(bibTeX As String)
-    Dim citationTag As String
     Dim author As String
     Dim title As String
     Dim year As String
     Dim city As String
     Dim publisher As String
-    
-    Dim xml As String
-    
-    Dim authorField As String
-    authorField = GetField(bibTeX, "author")
-    citationTag = GetBibKey(bibTeX)
-    
-    author = GetAuthorXML(bibTeX)
-    title = GetField(bibTeX, "title")
-    year = GetField(bibTeX, "year")
-    city = GetField(bibTeX, "address")
-    publisher = GetField(bibTeX, "publisher")
-    
-    xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
-    xml = xml & "  <b:Tag>" & citationTag & "</b:Tag>" & vbCrLf
-    xml = xml & "  <b:SourceType>Misc</b:SourceType>" & vbCrLf
-    xml = xml & "  <b:Author>" & author & "</b:Author>" & vbCrLf
-    
-    If title <> "" Then xml = xml & "  <b:Title>" & title & "</b:Title>" & vbCrLf
-    If year <> "" Then xml = xml & "  <b:Year>" & year & "</b:Year>" & vbCrLf
-    If city <> "" Then xml = xml & "  <b:City>" & city & "</b:City>" & vbCrLf
-    If publisher <> "" Then xml = xml & "  <b:Publisher>" & publisher & "</b:Publisher>" & vbCrLf
-    xml = xml & "</b:Source>"
-    
-    ActiveDocument.Bibliography.Sources.Add xml
-    Selection.Fields.Add Selection.Range, _
-        wdFieldCitation, citation
-End Sub
 
-Sub ParseReport(bibTeX As String)
-    ' Variables to hold the extracted fields
-    Dim author As String
-    Dim title As String
-    Dim year As String
-    Dim city As String
-    Dim publisher As String
-    Dim xml As String
-    Dim citationTag As String
-
-    ' Extract the fields from the BibTeX entry
-    author = GetAuthorXML(bibTeX)
-    title = GetField(bibTeX, "title")
-    year = GetField(bibTeX, "year")
-    city = GetField(bibTeX, "address")
-    publisher = GetField(bibTeX, "institution")
-
-    ' Create a unique citation tag
-    Dim authorField As String
-    authorField = GetField(bibTeX, "author")
-    citationTag = GetBibKey(bibTeX)
-
-    ' Start of the XML
-    xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
-    xml = xml & "  <b:Tag>" & citationTag & "</b:Tag>" & vbCrLf
-    xml = xml & "  <b:SourceType>Report</b:SourceType>" & vbCrLf
-    
-    ' Add author
-    xml = xml & "  <b:Author>" & author & "</b:Author>" & vbCrLf
-    
-    ' Add title
-    If title <> "" Then xml = xml & "  <b:Title>" & title & "</b:Title>" & vbCrLf
-    
-    ' Add year
-    If year <> "" Then xml = xml & "  <b:Year>" & year & "</b:Year>" & vbCrLf
-    
-    ' Add city
-    If city <> "" Then xml = xml & "  <b:City>" & city & "</b:City>" & vbCrLf
-    
-    ' Add publisher
-    If publisher <> "" Then xml = xml & "  <b:Publisher>" & publisher & "</b:Publisher>" & vbCrLf
-    
-    ' End of the XML
-    xml = xml & "</b:Source>"
-
-    ' Add the XML to the bibliography
-    ActiveDocument.Bibliography.Sources.Add xml
-
-    ' Insert citation at the current selection
-    Selection.Fields.Add Selection.Range, wdFieldCitation, citationTag
-End Sub
-
-Sub ParseBook(bibTeX As String)
-    ' Variables to hold the extracted fields
-    Dim author As String
-    Dim title As String
-    Dim year As String
-    Dim city As String
-    Dim publisher As String
-    Dim xml As String
-    Dim citationTag As String
-
-    ' Extract the fields from the BibTeX entry
-    author = GetAuthorXML(bibTeX)
-    title = GetField(bibTeX, "title")
-    year = GetField(bibTeX, "year")
-    city = GetField(bibTeX, "address")
-    publisher = GetField(bibTeX, "publisher")
-
-    ' Create a unique citation tag
-    Dim authorField As String
-    authorField = GetField(bibTeX, "author")
-    citationTag = GetBibKey(bibTeX)
-
-    ' Start of the XML
-    xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
-    xml = xml & "  <b:Tag>" & citationTag & "</b:Tag>" & vbCrLf
-    xml = xml & "  <b:SourceType>Book</b:SourceType>" & vbCrLf
-    
-    ' Add author
-    xml = xml & "  <b:Author>" & author & "</b:Author>" & vbCrLf
-    
-    ' Add title
-    If title <> "" Then xml = xml & "  <b:Title>" & title & "</b:Title>" & vbCrLf
-    
-    ' Add year
-    If year <> "" Then xml = xml & "  <b:Year>" & year & "</b:Year>" & vbCrLf
-    
-    ' Add city
-    If city <> "" Then xml = xml & "  <b:City>" & city & "</b:City>" & vbCrLf
-    
-    ' Add publisher
-    If publisher <> "" Then xml = xml & "  <b:Publisher>" & publisher & "</b:Publisher>" & vbCrLf
-    
-    ' End of the XML
-    xml = xml & "</b:Source>"
-
-    ' Add the XML to the bibliography
-    ActiveDocument.Bibliography.Sources.Add xml
-
-    ' Insert citation at the current selection
-    Selection.Fields.Add Selection.Range, wdFieldCitation, citationTag
-End Sub
-
-Sub ParseArticle(bibTeX As String)
-    ' Variables to hold the extracted fields
-    Dim author As String
-    Dim title As String
-    Dim year As String
+    ' Journal specifics
     Dim pages As String
     Dim journalName As String
     Dim volume As String
     Dim issue As String
-    Dim xml As String
-    Dim citationTag As String
-
-    ' Extract the fields from the BibTeX entry
-    author = GetAuthorXML(bibTeX)
-    title = GetField(bibTeX, "title")
-    year = GetField(bibTeX, "year")
-    pages = GetField(bibTeX, "pages")
-    journalName = GetField(bibTeX, "journal")
-    volume = GetField(bibTeX, "volume")
-    issue = GetField(bibTeX, "number")
-
-    ' Create a unique citation tag
-    Dim authorField As String
-    authorField = GetField(bibTeX, "author")
-    citationTag = GetBibKey(bibTeX)
-
-    ' Start of the XML
-    xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
-    xml = xml & "  <b:Tag>" & citationTag & "</b:Tag>" & vbCrLf
-    xml = xml & "  <b:SourceType>JournalArticle</b:SourceType>" & vbCrLf
     
-    ' Add author
-    xml = xml & "  <b:Author>" & author & "</b:Author>" & vbCrLf
-    
-    ' Add title
-    If title <> "" Then xml = xml & "  <b:Title>" & title & "</b:Title>" & vbCrLf
-    
-    ' Add year
-    If year <> "" Then xml = xml & "  <b:Year>" & year & "</b:Year>" & vbCrLf
-    
-    ' Add pages
-    If pages <> "" Then xml = xml & "  <b:Pages>" & pages & "</b:Pages>" & vbCrLf
-    
-    ' Add journal name
-    If journalName <> "" Then xml = xml & "  <b:JournalName>" & journalName & "</b:JournalName>" & vbCrLf
-    
-    ' Add volume
-    If volume <> "" Then xml = xml & "  <b:Volume>" & volume & "</b:Volume>" & vbCrLf
-    
-    ' Add issue
-    If issue <> "" Then xml = xml & "  <b:Issue>" & issue & "</b:Issue>" & vbCrLf
-    
-    ' End of the XML
-    xml = xml & "</b:Source>"
-
-    ' Add the XML to the bibliography
-    ' TODO add to bibliography only if reference is not present in the list
-    ActiveDocument.Bibliography.Sources.Add xml
-
-    ' Insert citation at the current selection
-    Selection.Fields.Add Selection.Range, wdFieldCitation, citationTag
-End Sub
-
-
-Sub ParseBookSection(bibTeX As String)
-    ' Variables to hold the extracted fields
-    Dim author As String
-    Dim title As String
-    Dim year As String
-    Dim pages As String
+    ' Book specific
     Dim bookTitle As String
-    Dim city As String
-    Dim publisher As String
-    Dim xml As String
-    Dim citationTag As String
-
-    ' Extract the fields from the BibTeX entry
-    author = GetAuthorXML(bibTeX)
-    title = GetField(bibTeX, "title")
-    year = GetField(bibTeX, "year")
-    pages = GetField(bibTeX, "pages")
-    bookTitle = GetField(bibTeX, "booktitle")
-    city = GetField(bibTeX, "address")
-    publisher = GetField(bibTeX, "publisher")
-
-    ' Create a unique citation tag
-    Dim authorField As String
-    authorField = GetField(bibTeX, "author")
-    citationTag = GetBibKey(bibTeX)
-
-    ' Start of the XML
-    xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
-    xml = xml & "  <b:Tag>" & citationTag & "</b:Tag>" & vbCrLf
-    xml = xml & "  <b:SourceType>BookSection</b:SourceType>" & vbCrLf
     
-    ' Add author
-    xml = xml & "  <b:Author>" & author & "</b:Author>" & vbCrLf
+    citationClass = GetCitationClass(bibTeX)
     
-    ' Add title
-    If title <> "" Then xml = xml & "  <b:Title>" & title & "</b:Title>" & vbCrLf
+    If citationClass = "" Then
+        MsgBox "Invalid bibTeX reference: " & bibTeX
+    Else
     
-    ' Add year
-    If year <> "" Then xml = xml & "  <b:Year>" & year & "</b:Year>" & vbCrLf
-    
-    ' Add pages
-    If pages <> "" Then xml = xml & "  <b:Pages>" & pages & "</b:Pages>" & vbCrLf
-    
-    ' Add book title
-    If bookTitle <> "" Then xml = xml & "  <b:BookTitle>" & bookTitle & "</b:BookTitle>" & vbCrLf
-    
-    ' Add city
-    If city <> "" Then xml = xml & "  <b:City>" & city & "</b:City>" & vbCrLf
-    
-    ' Add publisher
-    If publisher <> "" Then xml = xml & "  <b:Publisher>" & publisher & "</b:Publisher>" & vbCrLf
-    
-    ' End of the XML
-    xml = xml & "</b:Source>"
-
-    ' Add the XML to the bibliography
-    ActiveDocument.Bibliography.Sources.Add xml
-
-    ' Insert citation at the current selection
-    Selection.Fields.Add Selection.Range, wdFieldCitation, citationTag
+        citationTag = GetBibKey(bibTeX)
+        author = GetAuthorXML(bibTeX)
+        title = GetField(bibTeX, "title")
+        year = GetField(bibTeX, "year")
+        city = GetField(bibTeX, "address")
+        publisher = GetField(bibTeX, "publisher")
+        
+        xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
+        xml = xml & "  <b:Tag>" & citationTag & "</b:Tag>" & vbCrLf
+        xml = xml & "  <b:SourceType>" & citationClass & "</b:SourceType>" & vbCrLf
+        xml = xml & "  <b:Author>" & author & "</b:Author>" & vbCrLf
+        
+        If title <> "" Then xml = xml & "  <b:Title>" & title & "</b:Title>" & vbCrLf
+        If year <> "" Then xml = xml & "  <b:Year>" & year & "</b:Year>" & vbCrLf
+        If city <> "" Then xml = xml & "  <b:City>" & city & "</b:City>" & vbCrLf
+        If publisher <> "" Then xml = xml & "  <b:Publisher>" & publisher & "</b:Publisher>" & vbCrLf
+        
+        If citationClass = "JournalArticle" Then
+            pages = GetField(bibTeX, "pages")
+            journalName = GetField(bibTeX, "journal")
+            volume = GetField(bibTeX, "volume")
+            issue = GetField(bibTeX, "number")
+            
+            If pages <> "" Then xml = xml & "  <b:Pages>" & pages & "</b:Pages>" & vbCrLf
+            If journalName <> "" Then xml = xml & "  <b:JournalName>" & journalName & "</b:JournalName>" & vbCrLf
+            If volume <> "" Then xml = xml & "  <b:Volume>" & volume & "</b:Volume>" & vbCrLf
+            If issue <> "" Then xml = xml & "  <b:Issue>" & issue & "</b:Issue>" & vbCrLf
+        End If
+        
+        If citationClass = "BookSection" Then
+            bookTitle = GetField(bibTeX, "booktitle")
+            If bookTitle <> "" Then xml = xml & "  <b:BookTitle>" & bookTitle & "</b:BookTitle>" & vbCrLf
+        End If
+        
+        If citationClass = "ConferenceProceedings" Then
+            bookTitle = GetField(bibTeX, "booktitle")
+            If bookTitle <> "" Then xml = xml & "  <b:ConferenceName>" & bookTitle & "</b:ConferenceName>" & vbCrLf
+        End If
+        
+        xml = xml & "</b:Source>"
+        
+        InsertBibCitation citationTag, xml
+    End If
 End Sub
 
-Sub ParseConference(bibTeX As String)
-    ' Variables to hold the extracted fields
-    Dim author As String
-    Dim title As String
-    Dim year As String
-    Dim city As String
-    Dim conferenceName As String
-    Dim xml As String
-    Dim citationTag As String
 
-    ' Extract the fields from the BibTeX entry
-    author = GetAuthorXML(bibTeX)
-    title = GetField(bibTeX, "title")
-    year = GetField(bibTeX, "year")
-    city = GetField(bibTeX, "address")
-    conferenceName = GetField(bibTeX, "booktitle")
-
-    ' Create a unique citation tag
-    Dim authorField As String
-    authorField = GetField(bibTeX, "author")
-    citationTag = GetBibKey(bibTeX)
-
-    ' Start of the XML
-    xml = "<b:Source xmlns:b=""http://schemas.openxmlformats.org/officeDocument/2006/bibliography"">" & vbCrLf
-    xml = xml & "  <b:Tag>" & citationTag & "</b:Tag>" & vbCrLf
-    xml = xml & "  <b:SourceType>ConferenceProceedings</b:SourceType>" & vbCrLf
-    xml = xml & "  <b:Guid>{" & CreateObject("Scriptlet.TypeLib").GUID & "}</b:Guid>" & vbCrLf
+Function GetCitationClass(bibTeX As String) As String
+    Dim startPos As Integer
+    Dim endPos As Integer
     
-    ' Add author
-    xml = xml & "  <b:Author>" & author & "</b:Author>" & vbCrLf
+    Dim citationClass As String
+    Dim ret As String
     
-    ' Add title
-    If title <> "" Then xml = xml & "  <b:Title>" & title & "</b:Title>" & vbCrLf
+    startPos = InStr(bibTeX, "@") + 1
+    endPos = InStr(bibTeX, "{")
+    citationClass = ""
     
-    ' Add year
-    If year <> "" Then xml = xml & "  <b:Year>" & year & "</b:Year>" & vbCrLf
+    If startPos > 0 And endPos > startPos Then
+        citationClass = Mid(bibTeX, startPos, endPos - startPos)
+        citationClass = LCase(citationClass)
+    End If
     
-    ' Add city
-    If city <> "" Then xml = xml & "  <b:City>" & city & "</b:City>" & vbCrLf
+    Select Case citationClass
+        Case "article"
+            ret = "JournalArticle"
+        Case "book"
+            ret = "Book"
+        Case "booklet"
+            ret = "Book"
+        Case "inbook"
+            ret = "BookSection"
+        Case "incollection"
+            ret = "BookSection"
+        Case "inproceedings"
+            ret = "ConferenceProceedings"
+        Case "conference"
+            ret = "ConferenceProceedings"
+        Case "proceedings"
+            ret = "ConferenceProceedings"
+        Case "manual"
+            ret = "Book"
+        Case "mastersthesis"
+            ret = "Misc"
+        Case "phdthesis"
+            ret = "Misc"
+        Case "techreport"
+            ret = "Report"
+        Case "unpublished"
+            ret = "Misc"
+        Case "misc"
+            ret = "Misc"
+    End Select
     
-    ' Add conference name
-    If conferenceName <> "" Then xml = xml & "  <b:ConferenceName>" & conferenceName & "</b:ConferenceName>" & vbCrLf
-    
-    ' End of the XML
-    xml = xml & "</b:Source>"
-
-    ' Add the XML to the bibliography
-    ActiveDocument.Bibliography.Sources.Add xml
-
-    ' Insert citation at the current selection
-    Selection.Fields.Add Selection.Range, wdFieldCitation, citationTag
-End Sub
+    GetCitationClass = ret
+End Function
 
 Function GetBibKey(bibTeX As String) As String
     Dim startPos As Long
     Dim endPos As Long
     Dim bibKey As String
     
-    ' Find the starting position of the BibTeX key
     startPos = InStr(bibTeX, "{") + 1
-    ' Find the ending position of the BibTeX key
     endPos = InStr(bibTeX, ",")
     
-    ' Extract the BibTeX key
     bibKey = Mid(bibTeX, startPos, endPos - startPos)
-    
-    ' Return the BibTeX key
     GetBibKey = bibKey
 End Function
 
 Function GetField(bibTeX As String, fieldName As String) As String
-    Set regex = CreateObject("VBScript.RegExp")
-    
-    ' Create a pattern to find the field value
-    fieldPattern = fieldName & "\s*=\s*(""(.*)""|{(.*)})"
-    regex.IgnoreCase = True
-    regex.Global = False
-    regex.Pattern = fieldPattern
+    GetField = GetFieldInner(bibTeX, fieldName, 1)
+End Function
 
-    Set matches = regex.Execute(bibTeX)
-    If matches.Count > 0 Then
-        Set match = matches(0)
-        If Len(match.SubMatches(1)) > Len(match.SubMatches(2)) Then
-            fieldValue = match.SubMatches(1)
-        Else
-            fieldValue = match.SubMatches(2)
+Function GetFieldInner(bibTeX As String, fieldName As String, startPos As Integer) As String
+    Dim firstEqual As Integer
+    Dim ret As String
+    Dim i As Integer
+    Dim ch As String
+    
+    ret = ""
+    startPos = InStr(startPos, bibTeX, fieldName)
+    
+    If startPos > 0 Then
+        firstEqual = InStr(startPos, bibTeX, "=")
+        If firstEqual > 0 Then
+            For i = (firstEqual + 1) To Len(bibTeX)
+                ch = Mid(bibTeX, i, 1)
+                
+                If ch = "{" Then
+                    ret = GetFieldInBrackets(bibTeX, i)
+                    Exit For
+                ElseIf ch = """" Then
+                    ret = GetQuotedField(bibTeX, i)
+                    Exit For
+                ElseIf Not CharIsWhitespace(ch) Then
+                    ret = GetFieldUnbounded(bibTeX, i)
+                    Exit For
+                End If
+            Next i
         End If
-    Else
-        fieldValue = ""
     End If
     
-    GetField = fieldValue
+    If ret = "" And startPos > 0 Then
+        ret = GetFieldInner(bibTeX, fieldName, startPos + Len(fieldName))
+    End If
+    
+    GetFieldInner = ret
+End Function
+
+Function GetQuotedField(bibTeX As String, firstQuote As Integer)
+    Dim i As Integer
+    Dim ch As String
+    Dim endPos As Integer
+    Dim escaping As Boolean
+    Dim ret As String
+    Dim found As Boolean
+    
+    ret = ""
+    found = False
+    endPos = firstQuote
+    
+    For i = (firstQuote + 1) To Len(bibTeX)
+        ch = Mid(bibTeX, i, 1)
+        If ch = "\" And Not escaping Then
+            escaping = True
+        ElseIf Not escaping And ch = """" Then
+            endPos = i
+            found = True
+            Exit For
+        Else
+            escaping = False
+        End If
+    Next i
+    
+    If found Then
+        ret = Mid(bibTeX, firstQuote + 1, endPos - firstQuote - 1)
+    End If
+    
+    
+    GetQuotedField = ret
+End Function
+
+Function GetFieldInBrackets(bibTeX As String, firstBracket As Integer)
+    Dim i As Integer
+    Dim ch As String
+    Dim endPos As Integer
+    Dim levels As Integer
+    Dim ret As String
+    Dim found As Boolean
+    
+    ret = ""
+    found = False
+    endPos = firstBracket
+    
+    For i = firstBracket To Len(bibTeX)
+        ch = Mid(bibTeX, i, 1)
+        If ch = "{" Then
+            levels = levels + 1
+        ElseIf ch = "}" Then
+            levels = levels - 1
+        End If
+        If levels = 0 Then
+            endPos = i
+            found = True
+            Exit For
+        End If
+    Next i
+    
+    ' MsgBox "Bracket search end Pos = " & endPos & " and start POs = " & firstBracket
+    If found Then
+        ret = Mid(bibTeX, firstBracket + 1, endPos - firstBracket - 1)
+    End If
+    
+    GetFieldInBrackets = ret
+End Function
+
+Function GetFieldUnbounded(bibTeX As String, firstChar As Integer)
+    Dim i As Integer
+    Dim ch As String
+    Dim endPos As Integer
+    Dim ret As String
+    Dim found As Boolean
+    
+    ret = ""
+    found = False
+    endPos = firstChar
+    
+    For i = (firstChar + 1) To Len(bibTeX)
+        ch = Mid(bibTeX, i, 1)
+        If CharIsWhitespace(ch) Then
+            endPos = i
+            found = True
+            Exit For
+        End If
+    Next i
+    
+    If found Then
+        ret = Mid(bibTeX, firstChar, endPos - firstChar)
+    End If
+    
+    GetFieldUnbounded = CleanString(ret)
 End Function
 
 Function GetAuthorXML(bibTeX As String) As String
@@ -497,35 +348,80 @@ Function GetCorporateAuthor(authorField As String) As String
     Dim corporateAuthor As String
     Dim startPos As Integer
     Dim endPos As Integer
-
-    ' Find the start and end positions of the corporate author
+    
     startPos = InStr(authorField, "{")
     endPos = InStr(authorField, "}")
 
     If startPos > 0 And endPos > startPos Then
-        ' Extract the corporate author
         corporateAuthor = Mid(authorField, startPos + 1, endPos - startPos - 1)
     Else
-        ' No corporate author found, return empty string
         corporateAuthor = ""
     End If
     
     GetCorporateAuthor = "<b:Author><b:Corporate>" & corporateAuthor & "</b:Corporate></b:Author>"
 End Function
 
-
 Function CleanString(str As String) As String
-    Dim regex As Object
-    Set regex = CreateObject("VBScript.RegExp")
+    Dim i As Integer
+    Dim ch As String
+    Dim resultStr As String
     
-    regex.Pattern = "[^A-Za-z0-9À-ž\s]"
-    regex.Global = True
-    regex.IgnoreCase = True
+    resultStr = ""
     
-    CleanString = regex.Replace(str, "")
+    For i = 1 To Len(str)
+        ch = Mid(str, i, 1)
+        If (ch >= "A" And ch <= "Z") Or _
+           (ch >= "a" And ch <= "z") Or _
+           (ch >= "0" And ch <= "9") Or _
+           (ch >= ChrW(192) And ch <= ChrW(382)) Or _
+           (ch = " ") Then
+            resultStr = resultStr & ch
+        End If
+    Next i
+    
+    CleanString = resultStr
 End Function
 
-Sub InsertBibCitation(citation As String)
-    Selection.Fields.Add Selection.Range, _
-        wdFieldCitation, citation
+Sub InsertBibCitation(citationTag As String, xml As String)
+    If Not CitationTagExists(citationTag) Then
+        ActiveDocument.Bibliography.Sources.Add xml
+    End If
+    Selection.Fields.Add Selection.Range, wdFieldCitation, citationTag
 End Sub
+
+Function CitationTagExists(citationTag As String) As Boolean
+    exists = False
+    For i = 1 To ActiveDocument.Bibliography.Sources.Count
+        If ActiveDocument.Bibliography.Sources(i).Tag = citationTag Then
+            exists = True
+            Exit For
+        End If
+    Next i
+    CitationTagExists = exists
+End Function
+
+Function CharIsWhitespace(ch As String) As Boolean
+    If Not (ch = " " Or ch = vbTab Or ch = vbCr Or ch = vbLf) Then
+        CharIsWhitespace = False
+    Else
+        CharIsWhitespace = True
+    End If
+End Function
+
+Function IsAllWhitespace(inputStr As String) As Boolean
+    Dim i As Integer
+    Dim ch As String
+    Dim isWhitespace As Boolean
+    
+    isWhitespace = True
+    
+    For i = 1 To Len(inputStr)
+        ch = Mid(inputStr, i, 1)
+        If Not (ch = " " Or ch = vbTab Or ch = vbCr Or ch = vbLf) Then
+            isWhitespace = False
+            Exit For
+        End If
+    Next i
+    
+    IsAllWhitespace = isWhitespace
+End Function
