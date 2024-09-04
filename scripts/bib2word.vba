@@ -176,7 +176,7 @@ Function GetBibKey(bibTeX As String) As String
 End Function
 
 Function GetField(bibTeX As String, fieldName As String) As String
-    GetField = GetFieldInner(bibTeX, fieldName, 1)
+    GetField = EscapeXMLSpecialChars(GetFieldInner(bibTeX, fieldName, 1))
 End Function
 
 Function GetFieldInner(bibTeX As String, fieldName As String, startPos As Integer) As String
@@ -334,9 +334,9 @@ Function GetAuthorNameList(authorField As String) As String
         nameParts = Split(authors(i), ",")
         
         If UBound(nameParts) = 1 Then
-            xml = xml & "<b:Person><b:Last>" & CleanString(nameParts(0)) & "</b:Last><b:First>" & CleanString(nameParts(1)) & "</b:First></b:Person>"
+            xml = xml & "<b:Person><b:Last>" & EscapeXMLSpecialChars(CleanString(nameParts(0))) & "</b:Last><b:First>" & EscapeXMLSpecialChars(CleanString(nameParts(1))) & "</b:First></b:Person>"
         Else
-            xml = xml & "<b:Person><b:Last>" & CleanString(nameParts(0)) & "</b:Last></b:Person>"
+            xml = xml & "<b:Person><b:Last>" & EscapeXMLSpecialChars(CleanString(nameParts(0))) & "</b:Last></b:Person>"
         End If
     Next i
 
@@ -358,7 +358,7 @@ Function GetCorporateAuthor(authorField As String) As String
         corporateAuthor = ""
     End If
     
-    GetCorporateAuthor = "<b:Author><b:Corporate>" & corporateAuthor & "</b:Corporate></b:Author>"
+    GetCorporateAuthor = "<b:Author><b:Corporate>" & EscapeXMLSpecialChars(corporateAuthor) & "</b:Corporate></b:Author>"
 End Function
 
 Function CleanString(str As String) As String
@@ -373,8 +373,7 @@ Function CleanString(str As String) As String
         If (ch >= "A" And ch <= "Z") Or _
            (ch >= "a" And ch <= "z") Or _
            (ch >= "0" And ch <= "9") Or _
-           (ch >= ChrW(192) And ch <= ChrW(382)) Or _
-           (ch = " ") Then
+           (ch >= ChrW(192) And ch <= ChrW(382)) Then
             resultStr = resultStr & ch
         End If
     Next i
@@ -390,14 +389,14 @@ Sub InsertBibCitation(citationTag As String, xml As String)
 End Sub
 
 Function CitationTagExists(citationTag As String) As Boolean
-    exists = False
+    Exists = False
     For i = 1 To ActiveDocument.Bibliography.Sources.Count
-        If ActiveDocument.Bibliography.Sources(i).Tag = citationTag Then
-            exists = True
+        If ActiveDocument.Bibliography.Sources(i).tag = citationTag Then
+            Exists = True
             Exit For
         End If
     Next i
-    CitationTagExists = exists
+    CitationTagExists = Exists
 End Function
 
 Function CharIsWhitespace(ch As String) As Boolean
@@ -425,3 +424,14 @@ Function IsAllWhitespace(inputStr As String) As Boolean
     
     IsAllWhitespace = isWhitespace
 End Function
+
+Function EscapeXMLSpecialChars(inputString As String) As String
+    inputString = Replace(inputString, "&", "&amp;")
+    inputString = Replace(inputString, "<", "&lt;")
+    inputString = Replace(inputString, ">", "&gt;")
+    inputString = Replace(inputString, """", "&quot;")
+    inputString = Replace(inputString, "'", "&apos;")
+    inputString = Replace(inputString, "\", "")
+    EscapeXMLSpecialChars = inputString
+End Function
+
